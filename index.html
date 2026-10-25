@@ -430,7 +430,9 @@
       \(d_z = 32\) models (\(d_z = 10\) on 3DShapes), and sample quality with \(d_z = 256\) models trained with latent
       dropout. <b>Latent quality</b> is the held-out accuracy or AUROC of a logistic-regression classifier trained on
       \(\bz\) (5-fold cross-validation); FID is computed with clean-FID from 10,000 samples against the training set.
-      For InfoDiffusion, &plusmn; is the standard deviation over three training seeds.
+      For InfoDiffusion, &plusmn; is the standard deviation over three training seeds. DiffAE is re-trained on every
+      dataset with its official implementation, and the AE, VAE, \(\beta\)-VAE and InfoVAE on FFHQ; the remaining
+      baseline results come from earlier runs with a separate training pipeline.
     </p>
 
     <h3 class="title">Informative latents and high-quality samples</h3>
@@ -457,7 +459,8 @@
       Latent quality is classification accuracy (FashionMNIST, CIFAR10) or the average accuracy over age, gender and
       eyeglasses (FFHQ). InfoDiffusion rows without "learned latent" draw \(\bz \sim p(\bz)\); \(w\) is the guidance
       weight on \(\bz\). Bold marks the best and underline the second-best value. For the baselines, &plusmn; is over
-      cross-validation folds (latent quality) or sample sets (FID).
+      cross-validation folds (latent quality) or sample sets (FID). DiffAE and the FFHQ entries of the other baselines
+      are re-trained; the remaining baseline entries come from earlier runs.
     </p>
     <p>
       The compact latents of InfoDiffusion are the most informative of labels on all three datasets. With latents drawn
@@ -490,7 +493,7 @@
       \(\bz \sim p(\bz)\) (first row) or from the learned latent prior. An attribute is captured if some dimension of
       \(\bz\) detects it with AUROC \(\ge 0.75\); TAD sums, over the captured attributes, the AUROC gap between the two
       most predictive dimensions, and Attrs counts them. CelebA latent quality is the AUROC averaged over the 40
-      attributes.
+      attributes. DiffAE is re-trained; the other baseline entries come from earlier runs.
     </p>
     <p>
       On 3DShapes, InfoDiffusion attains the highest DCI disentanglement score (0.296), although the \(\beta\)-VAE and
@@ -542,7 +545,7 @@
     <p class="table-caption">
       Gen.: whether the model is generative. Dim.: latent dimension. <sup>†</sup> Weights from the method's PyTorch
       repository. <sup>*</sup> Pretrained SimCLR encoder fine-tuned with an added dense layer that projects to 32
-      dimensions. <sup>‡</sup> Re-trained with the baseline's codebase.
+      dimensions. <sup>‡</sup> Trained by us with the baseline's codebase, in earlier runs.
     </p>
     <p>
       InfoDiffusion's 32-dimensional latents are comparable to, and in some cases better than, the much larger
