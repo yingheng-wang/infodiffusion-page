@@ -11,11 +11,12 @@ python3 -m http.server 8765   # then open http://127.0.0.1:8765/
 - `static/js/index.js`: the uncurated-sample viewer (dataset tabs; the FIDs are the `w = 2` rows of Tables 2–3) and the BibTeX copy button.
 - `static/images/`: paper figures (PNG for figures with photos, SVG for the TikZ architecture diagrams of App. E), the favicon and the 1200×630 social card (`og_image.png`, made from Fig. 1).
 - `static/samples/<dataset>_<learned|prior>_w2.png`: the App. J grids, i.e. the first 64 samples (fixed seed, no selection) of the main configuration, (λ, ζ) = (0.1, 0.9), d_z = 256, first training seed, guidance w = 2. The paper's Fig. 10 shows the first 32 of the learned-prior grids. The 32×32-pixel grids (FashionMNIST, CIFAR10) are doubled with nearest-neighbour scaling so they stay sharp.
-- `static/videos/infodiffusion_teaser.mp4`: the narrated teaser (source, narration and renderer in `../infodiffusion-video/`), re-encoded for the web; its poster is `static/images/infodiffusion_teaser_poster.jpg`. It autoplays muted (the subtitles are burned in); "Play with sound" restarts it unmuted and turns off the loop. Bump the `?v=` on its `<source>` when replacing it. To re-encode a new render:
+- `static/videos/infodiffusion_teaser.mp4`: the narrated teaser (~90 s; source, narration and renderer in `../infodiffusion-video/`), re-encoded for the web with the command below; its poster is `static/images/infodiffusion_teaser_poster.jpg`. It autoplays muted (the subtitles are burned in); "Play with sound" restarts it unmuted and turns off the loop. Bump the `?v=` on its `<source>` when replacing it. To re-encode a new render:
 
   ```bash
   FFMPEG=/path/to/ffmpeg   # e.g. the binary bundled with the Python package imageio-ffmpeg
   $FFMPEG -i ../infodiffusion-video/out/infodiffusion_teaser.mp4 -c:v libx264 -crf 25 -preset slow -pix_fmt yuv420p \
+          -profile:v high -color_primaries bt709 -color_trc bt709 -colorspace bt709 \
           -c:a copy -movflags +faststart static/videos/infodiffusion_teaser.mp4
   cp ../infodiffusion-video/out/infodiffusion_teaser_poster.jpg static/images/
   ```

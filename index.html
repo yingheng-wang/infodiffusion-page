@@ -144,7 +144,7 @@
   <div class="container is-max-desktop">
     <div class="hero-body">
       <video id="teaser-video" autoplay muted loop playsinline controls preload="auto" width="1920" height="1080"
-             poster="static/images/infodiffusion_teaser_poster.jpg" aria-label="Narrated overview of InfoDiffusion (with subtitles in the video)">
+             poster="static/images/infodiffusion_teaser_poster.jpg" aria-label="Narrated overview of InfoDiffusion (90 seconds, with subtitles in the video)">
         <source src="static/videos/infodiffusion_teaser.mp4?v=20261025" type="video/mp4">
       </video>
       <div class="video-actions" id="teaser-sound-row">
@@ -165,7 +165,7 @@
     document.getElementById('teaser-sound').addEventListener('click', () => {
       v.currentTime = 0;
       v.muted = false;
-      v.play();
+      v.play().catch(() => {});
     });
     // Once the narration is audible, play through once instead of looping, and drop the button.
     v.addEventListener('volumechange', () => {
