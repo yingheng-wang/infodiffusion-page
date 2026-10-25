@@ -1,157 +1,141 @@
-body {
-  font-family: 'Noto Sans', sans-serif;
+/* Project page styles, following the Academic Project Page Template (Bulma + Nerfies). */
+:root {
+  --accent: #b83064;          /* the paper's link color */
+  --accent-shade: #f8e8ef;
+  --finding: #6486b8;         /* the paper's citation color */
+  --finding-bg: #eef2f8;
+  --ink: #363636;
+  --muted: #6b6b6b;
+  --rule: #e3e3e3;
 }
 
+html { color-scheme: light; background: #fff; }
+body { font-family: 'Noto Sans', sans-serif; color: var(--ink); background: #fff; }
 
-.footer .icon-link {
-    font-size: 25px;
-    color: #000;
+.publication-title, .publication-authors, .teaser, .title, .subtitle, .tabs, .sample-panel figcaption {
+  font-family: 'Google Sans', 'Noto Sans', sans-serif;
 }
 
-.link-block a {
-    margin-top: 5px;
-    margin-bottom: 5px;
+/* ---------- hero ---------- */
+.hero-body { padding-top: 3.5rem; padding-bottom: 1.5rem; }
+.publication-title { line-height: 1.25; font-size: 2.4rem !important; }
+.publication-authors { margin-top: 0.4rem; }
+.publication-authors a { color: hsl(204, 86%, 45%) !important; }
+.publication-authors a:hover { text-decoration: underline; }
+.author-block { display: inline-block; margin: 0 0.15em; }
+.affiliations { color: var(--muted); }
+.affiliations .author-block { margin: 0 0.7em; }
+.venue { margin-top: 0.5rem; font-family: 'Google Sans', 'Noto Sans', sans-serif; font-size: 1.15rem; color: var(--ink); }
+.publication-links { margin-top: 1.1rem; }
+.link-block { display: inline-block; }
+.link-block a { margin: 5px 3px; }
+.link-block[hidden] { display: none; }
+.revision-note { max-width: 720px; margin: 0.9rem auto 0; font-size: 0.95rem; line-height: 1.55; color: var(--muted); }
+
+/* ---------- teaser ---------- */
+.teaser .hero-body { padding-top: 0.5rem; padding-bottom: 2.5rem; }
+.teaser img { display: block; width: 100%; max-width: 860px; margin: 0 auto; }
+.teaser .subtitle { font-size: 1.1rem; line-height: 1.55; margin-top: 1rem; color: #4a4a4a; }
+
+/* ---------- teaser video ---------- */
+.teaser-video .hero-body { padding-top: 0.5rem; padding-bottom: 1.25rem; }
+.teaser-video[hidden] { display: none; }
+.teaser-video video {
+  display: block; width: 100%; height: auto; aspect-ratio: 16 / 9;
+  border-radius: 12px; background: #09090b; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
+}
+.teaser-video .video-actions { display: flex; justify-content: center; margin-top: 0.85rem; }
+.teaser-video .video-actions[hidden] { display: none; }
+
+/* ---------- body sections ---------- */
+.section { padding: 2.75rem 1.5rem; }
+.section .title.is-3 { margin-bottom: 1.2rem; }
+.content p, .content li { font-size: 1.08rem; line-height: 1.7; }
+.content h3.title { font-size: 1.3rem; margin-top: 2rem; margin-bottom: 0.8rem; }
+.abstract p { font-size: 1.08rem; line-height: 1.7; }
+
+figure.paper-figure { margin: 1.6rem auto 1.8rem; text-align: center; }
+figure.paper-figure img { width: 100%; height: auto; display: block; margin: 0 auto; }
+figure.paper-figure.narrow img { max-width: 560px; }
+figure.paper-figure.medium img { max-width: 760px; }
+figure.paper-figure figcaption {
+  font-style: normal; font-size: 0.95rem; line-height: 1.55; color: #555; text-align: left;
+  max-width: 860px; margin: 0.7rem auto 0;
+}
+.content figure.paper-figure { margin-left: auto; margin-right: auto; }
+
+.takeaway {
+  background: var(--finding-bg); border-left: 4px solid var(--finding);
+  padding: 0.9rem 1.2rem; margin: 1.5rem 0; border-radius: 0 6px 6px 0;
+}
+.takeaway p { margin: 0 !important; font-size: 1.08rem; }
+
+.accent { color: var(--accent); font-weight: 600; }
+.mjx-chtml, mjx-container { font-size: 105% !important; }
+mjx-container[display="true"] { overflow-x: auto; overflow-y: hidden; padding: 0.2rem 0; }
+
+/* ---------- code ---------- */
+.content pre { background: #f6f6f8; border-radius: 6px; font-size: 0.86rem; line-height: 1.55; padding: 1rem 1.15rem; }
+
+/* ---------- tables ---------- */
+.table-wrap { overflow-x: auto; margin: 1.2rem auto 0.4rem; }
+.content table.results {
+  width: auto; border-collapse: collapse; margin: 0 auto; font-size: 0.98rem; min-width: 560px;
+  font-variant-numeric: tabular-nums;
+}
+.content table.results.compact { min-width: 0; }
+.content table.results.compact th, .content table.results.compact td { padding: 0.38rem 0.6rem; }
+.content table.results th, .content table.results td { padding: 0.38rem 0.85rem; border: none; text-align: right; white-space: nowrap; vertical-align: middle; }
+.content table.results th { font-weight: 600; border-bottom: 1.5px solid #333; color: var(--ink); }
+.content table.results thead tr:first-child th { border-top: 1.5px solid #333; }
+.content table.results thead tr.group th { border-bottom: 1px solid #bbb; text-align: center; padding-bottom: 0.2rem; }
+.content table.results thead tr.group th.blank { border-bottom: none; }
+.content table.results tbody tr:last-child td { border-bottom: 1.5px solid #333; }
+.content table.results td.l, .content table.results th.l { text-align: left; }
+.content table.results td.c, .content table.results th.c { text-align: center; }
+.content table.results tr.group-start td { border-top: 1px solid #bbb; }
+.content table.results tr.ours td:not(.plain) { background: var(--accent-shade); }
+.content table.results tr.sub td.l { padding-left: 1.8rem; }
+.content table.results td b { font-weight: 700; }
+.content table.results td u { text-decoration-thickness: 1.5px; text-underline-offset: 3px; }
+.content table.results .pm { color: #777; font-size: 0.82em; margin-left: 0.2em; }
+.content table.results .yes { color: #2e7d32; font-weight: 700; }
+.content table.results .no { color: #b00000; font-weight: 700; }
+.table-caption { font-size: 0.95rem; color: #555; line-height: 1.55; max-width: 860px; margin: 0.6rem auto 1.6rem; }
+.table-pair { display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap; align-items: flex-start; }
+.table-pair > div { min-width: 0; max-width: 100%; }
+
+/* ---------- uncurated samples ---------- */
+.explorer-controls { display: flex; flex-direction: column; align-items: center; gap: 0.7rem; margin: 1.2rem 0 1rem; }
+.explorer-controls .tabs { margin-bottom: 0; white-space: normal; max-width: 100%; }
+.explorer-controls .tabs ul { flex-wrap: wrap; flex-shrink: 1; justify-content: center; row-gap: 6px; border-bottom: none; }
+.explorer-controls .tabs.is-toggle li.is-active a { background-color: var(--accent); border-color: var(--accent); }
+.explorer-note { font-size: 0.92rem; color: var(--muted); text-align: center; }
+.sample-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.4rem; }
+.sample-panel { margin: 0 !important; }
+.sample-panel img { width: 100%; height: auto; display: block; border-radius: 4px; background: #f1f1f1; aspect-ratio: 1 / 1; }
+.content .sample-panel figcaption { font-style: normal; text-align: center; font-size: 1rem; margin-top: 0.5rem; line-height: 1.35; }
+.sample-panel figcaption .fid { display: block; font-size: 0.85rem; color: #777; font-family: 'Noto Sans', sans-serif; }
+.sample-panel.is-learned figcaption { color: var(--accent); font-weight: 600; }
+
+/* ---------- bibtex / footer ---------- */
+.bib-wrap { position: relative; }
+.bib-wrap pre { white-space: pre-wrap; padding-right: 5rem; }
+.copy-btn { position: absolute; top: 0.6rem; right: 0.6rem; z-index: 1; }
+.footer { padding: 2.5rem 1.5rem 3rem; background: #fafafa; }
+.footer p { font-size: 0.9rem; color: #666; }
+
+/* ---------- small screens ---------- */
+@media screen and (max-width: 768px) {
+  .hero-body { padding: 2.2rem 1rem 1rem; }
+  .publication-title { font-size: 1.75rem !important; }
+  .publication-title br { display: none; }
+  .publication-authors { font-size: 1.05rem !important; }
+  .section { padding: 2rem 1rem; }
+  .content p, .content li, .abstract p { font-size: 1rem; }
+  .sample-pair { grid-template-columns: minmax(0, 1fr); }
 }
 
-.dnerf {
-  font-variant: small-caps;
-}
-
-
-.teaser .hero-body {
-  padding-top: 0;
-  padding-bottom: 3rem;
-}
-
-.teaser {
-  font-family: 'Google Sans', sans-serif;
-}
-
-
-.publication-title {
-}
-
-.publication-banner {
-  max-height: parent;
-
-}
-
-.publication-banner video {
-  position: relative;
-  left: auto;
-  top: auto;
-  transform: none;
-  object-fit: fit;
-}
-
-.publication-header .hero-body {
-}
-
-.publication-title {
-    font-family: 'Google Sans', sans-serif;
-}
-
-.publication-authors {
-    font-family: 'Google Sans', sans-serif;
-}
-
-.publication-venue {
-    color: #555;
-    width: fit-content;
-    font-weight: bold;
-}
-
-.publication-awards {
-    color: #ff3860;
-    width: fit-content;
-    font-weight: bolder;
-}
-
-.publication-authors {
-}
-
-.publication-authors a {
-   color: hsl(204, 86%, 53%) !important;
-}
-
-.publication-authors a:hover {
-    text-decoration: underline;
-}
-
-.author-block {
-  display: inline-block;
-}
-
-.publication-banner img {
-}
-
-.publication-authors {
-  /*color: #4286f4;*/
-}
-
-.publication-video {
-    position: relative;
-    width: 100%;
-    height: 0;
-    padding-bottom: 56.25%;
-
-    overflow: hidden;
-    border-radius: 10px !important;
-}
-
-.publication-video iframe {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-}
-
-.publication-body img {
-}
-
-.results-carousel {
-  overflow: hidden;
-}
-
-.results-carousel .item {
-  margin: 5px;
-  overflow: hidden;
-  border: 1px solid #bbb;
-  border-radius: 10px;
-  padding: 0;
-  font-size: 0;
-}
-
-.results-carousel video {
-  margin: 0;
-}
-
-
-.interpolation-panel {
-  background: #f5f5f5;
-  border-radius: 10px;
-}
-
-.interpolation-panel .interpolation-image {
-  width: 100%;
-  border-radius: 5px;
-}
-
-.interpolation-video-column {
-}
-
-.interpolation-panel .slider {
-  margin: 0 !important;
-}
-
-.interpolation-panel .slider {
-  margin: 0 !important;
-}
-
-#interpolation-image-wrapper {
-  width: 100%;
-}
-#interpolation-image-wrapper img {
-  border-radius: 5px;
-}
+/* Bulma heroes are column flexboxes with auto-margined containers, which then size to their widest
+   child (a table); pin them to the section width so wide tables scroll inside .table-wrap instead. */
+.hero > .container { width: 100%; min-width: 0; }

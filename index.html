@@ -1,386 +1,636 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="description"
-        content="InfoDiffusion: Representation Learning Using Information Maximizing Diffusion Models">
-  <meta name="keywords" content="InfoDiffusion, Diffusion Models, Representation Learning">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
   <title>InfoDiffusion: Representation Learning Using Information Maximizing Diffusion Models</title>
+  <meta name="description" content="InfoDiffusion augments diffusion models with low-dimensional latent variables, trained with mutual-information and prior regularization, to learn disentangled, human-interpretable representations while retaining the sample quality of diffusion models.">
+  <meta name="keywords" content="InfoDiffusion, diffusion models, representation learning, mutual information, auxiliary latents, disentanglement">
 
-  <!-- Global site tag (gtag.js) - Google Analytics -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-PYVRSFMDRL"></script>
+  <!-- Social cards -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="InfoDiffusion: Representation Learning Using Information Maximizing Diffusion Models">
+  <meta property="og:description" content="Diffusion models with a low-dimensional, semantically meaningful latent space: mutual-information and prior regularization keep the latents in use, giving disentangled factors of variation and high-quality samples.">
+  <meta property="og:url" content="https://yingheng-wang.com/infodiffusion-page/">
+  <meta property="og:image" content="https://yingheng-wang.com/infodiffusion-page/static/images/og_image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="InfoDiffusion (ICML 2023)">
+  <meta name="twitter:description" content="Diffusion models with a low-dimensional, semantically meaningful latent space: mutual-information and prior regularization keep the latents in use, giving disentangled factors of variation and high-quality samples.">
+  <meta name="twitter:image" content="https://yingheng-wang.com/infodiffusion-page/static/images/og_image.png">
+
+  <!-- Google Scholar -->
+  <meta name="citation_title" content="InfoDiffusion: Representation Learning Using Information Maximizing Diffusion Models">
+  <meta name="citation_author" content="Wang, Yingheng">
+  <meta name="citation_author" content="Schiff, Yair">
+  <meta name="citation_author" content="Gokaslan, Aaron">
+  <meta name="citation_author" content="Pan, Weishen">
+  <meta name="citation_author" content="Wang, Fei">
+  <meta name="citation_author" content="De Sa, Christopher">
+  <meta name="citation_author" content="Kuleshov, Volodymyr">
+  <meta name="citation_publication_date" content="2023">
+  <meta name="citation_conference_title" content="International Conference on Machine Learning">
+  <meta name="citation_volume" content="202">
+  <meta name="citation_firstpage" content="36336">
+  <meta name="citation_lastpage" content="36354">
+  <meta name="citation_arxiv_id" content="2306.08757">
+  <meta name="citation_pdf_url" content="https://arxiv.org/pdf/2306.08757">
+
+  <link rel="icon" type="image/svg+xml" href="static/images/icon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="static/images/favicon-32.png">
+  <link rel="apple-touch-icon" href="static/images/apple-touch-icon.png">
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="static/css/index.css?v=20261025c">
+
   <script>
-    window.dataLayer = window.dataLayer || [];
-
-    function gtag() {
-      dataLayer.push(arguments);
-    }
-
-    gtag('js', new Date());
-
-    gtag('config', 'G-PYVRSFMDRL');
-  </script>
-
-  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
-        rel="stylesheet">
-
-  <link rel="stylesheet" href="./static/css/bulma.min.css">
-  <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
-  <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
-  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
-  <link rel="stylesheet"
-        href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
-  <link rel="stylesheet" href="./static/css/index.css">
-  <link rel="icon" href="./static/images/favicon.svg">
-
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-  <script defer src="./static/js/fontawesome.all.min.js"></script>
-  <script src="./static/js/bulma-carousel.min.js"></script>
-  <script src="./static/js/bulma-slider.min.js"></script>
-  <script src="./static/js/index.js"></script>
-
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
-    <style>
-        .scrollable {
-            max-width: 80%; /* Adjust the width as needed */
-            overflow-x: auto;
-            white-space: pre-wrap; /* This ensures that the text will wrap and not overflow */
-            margin: 0 auto; /* Center the scrollable block */
+    window.MathJax = {
+      tex: {
+        inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']],
+        macros: {
+          bx: '\\mathbf{x}', bz: '\\mathbf{z}', bv: '\\mathbf{v}', bh: '\\mathbf{h}', bs: '\\mathbf{s}', bb: '\\mathbf{b}',
+          bI: '\\mathbf{I}', bzero: '\\mathbf{0}', beps: '\\boldsymbol{\\epsilon}', KL: '\\mathrm{KL}', MI: '\\mathrm{MI}', D: '\\mathrm{D}'
         }
-    </style>
+      },
+      chtml: { scale: 1.0 }
+    };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <script defer src="static/js/index.js?v=20261025"></script>
 </head>
 <body>
 
-
-
+<!-- ================= Title ================= -->
 <section class="hero">
   <div class="hero-body">
-    <div class="container is-max-desktop">
+    <div class="container is-max-widescreen">
       <div class="columns is-centered">
         <div class="column has-text-centered">
-          <h1 class="title is-1 publication-title">InfoDiffusion: Representation Learning Using Information Maximizing Diffusion Models</h1>
-          <div class="is-size-5 publication-authors">
-            <span class="author-block">
-              <a href="https://isjakewong.github.io/">Yingheng Wang</a>,</span>
-            <span class="author-block">
-              <a href="https://yair-schiff.github.io">Yair Schiff</a>,</span>
-            <span class="author-block">
-              <a href="https://skylion007.github.io">Aaron Gokaslan</a>,
-            </span>
-            <span class="author-block">
-              <a href="https://vivo.weill.cornell.edu/display/cwid-wep4001">Weishen Pan</a>,
-            </span>
-            <br> <!-- Line break added here -->
-            <span class="author-block">
-              <a href="https://wcm-wanglab.github.io/">Fei Wang</a>,
-            </span>
-            <span class="author-block">
-              <a href="https://www.cs.cornell.edu/~cdesa/">Chris De Sa</a>,
-            </span>
-            <span class="author-block">
-              <a href="https://www.cs.cornell.edu/~kuleshov/">Volodymyr Kuleshov</a>
-            </span>
-          </div>
-          
-          <div class="is-size-5 publication-authors">
-            <span class="author-block"></sup>Cornell University,</span>
-            <span class="author-block"></sup>Cornell Tech, NY</span>
-          </div>
-          
-          <div class="column has-text-centered">
-            <div class="publication-links">
-              <!-- arXiv Link. -->
-              <span class="link-block">
-                <a href="https://proceedings.mlr.press/v202/wang23ah.html"
-                   class="external-link button is-normal is-rounded is-dark">
-                  <span class="icon">
-                      <i class="fas fa-file-pdf"></i>
-                  </span>
-                  <span>Paper</span>
-                </a>
-              </span>
-              <span class="link-block">
-                <a href="https://arxiv.org/abs/2306.08757"
-                   class="external-link button is-normal is-rounded is-dark">
-                  <span class="icon">
-                      <i class="ai ai-arxiv"></i>
-                  </span>
-                  <span>arXiv</span>
-                </a>
-              </span>
-              <!-- Code Link. -->
-              <span class="link-block">
-                <a href="https://github.com/google/nerfies"
-                   class="external-link button is-normal is-rounded is-dark">
-                  <span class="icon">
-                      <i class="fab fa-github"></i>
-                  </span>
-                  <span>Code</span>
-                  </a>
-              </span>
-            </div>
+          <h1 class="title is-2 publication-title">
+            InfoDiffusion: Representation Learning Using<br>
+            Information Maximizing Diffusion Models
+          </h1>
 
+          <div class="is-size-5 publication-authors">
+            <span class="author-block"><a href="https://yingheng-wang.com/" target="_blank">Yingheng Wang</a>,</span>
+            <span class="author-block"><a href="https://yair-schiff.github.io/" target="_blank">Yair Schiff</a>,</span>
+            <span class="author-block"><a href="https://skylion007.github.io/" target="_blank">Aaron Gokaslan</a>,</span>
+            <span class="author-block"><a href="https://vivo.weill.cornell.edu/display/cwid-wep4001" target="_blank">Weishen Pan</a>,</span>
+            <br>
+            <span class="author-block"><a href="https://wcm-wanglab.github.io/" target="_blank">Fei Wang</a>,</span>
+            <span class="author-block"><a href="https://www.cs.cornell.edu/~cdesa/" target="_blank">Christopher De Sa</a>,</span>
+            <span class="author-block"><a href="https://www.cs.cornell.edu/~kuleshov/" target="_blank">Volodymyr Kuleshov</a></span>
           </div>
+
+          <div class="is-size-5 publication-authors affiliations">
+            <span class="author-block">Cornell University</span>
+            <span class="author-block">Cornell Tech</span>
+            <span class="author-block">Weill Cornell Medicine</span>
+          </div>
+
+          <div class="venue">ICML 2023</div>
+
+          <div class="publication-links">
+            <span class="link-block">
+              <a href="https://arxiv.org/pdf/2306.08757" target="_blank" class="external-link button is-normal is-rounded is-dark">
+                <span class="icon"><i class="fas fa-file-pdf"></i></span>
+                <span>Paper</span>
+              </a>
+            </span>
+            <span class="link-block">
+              <a href="https://arxiv.org/abs/2306.08757" target="_blank" class="external-link button is-normal is-rounded is-dark">
+                <span class="icon"><i class="ai ai-arxiv"></i></span>
+                <span>arXiv</span>
+              </a>
+            </span>
+            <span class="link-block">
+              <a href="https://github.com/yingheng-wang/InfoDiffusion" target="_blank" class="external-link button is-normal is-rounded is-dark">
+                <span class="icon"><i class="fab fa-github"></i></span>
+                <span>Code</span>
+              </a>
+            </span>
+            <span class="link-block">
+              <a href="#video" class="external-link button is-normal is-rounded is-dark">
+                <span class="icon"><i class="fas fa-circle-play"></i></span>
+                <span>Video</span>
+              </a>
+            </span>
+            <span class="link-block">
+              <a href="#BibTeX" class="external-link button is-normal is-rounded is-dark">
+                <span class="icon"><i class="fas fa-quote-right"></i></span>
+                <span>BibTeX</span>
+              </a>
+            </span>
+          </div>
+
+          <p class="revision-note">
+            Revised in 2026: the paper now describes a rectified-flow implementation with a \(\bz\)-conditioned U-Net,
+            classifier-free guidance on \(\bz\) and FSQ discrete latents, and reports new results. All numbers on this
+            page are from the revised paper.
+          </p>
         </div>
       </div>
     </div>
   </div>
 </section>
 
+<!-- ================= Video ================= -->
+<section class="hero teaser-video" id="video">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+      <video id="teaser-video" autoplay muted loop playsinline controls preload="auto" width="1920" height="1080"
+             poster="static/images/infodiffusion_teaser_poster.jpg" aria-label="Narrated overview of InfoDiffusion (with subtitles in the video)">
+        <source src="static/videos/infodiffusion_teaser.mp4?v=20261025" type="video/mp4">
+      </video>
+      <div class="video-actions" id="teaser-sound-row">
+        <button class="button is-small is-rounded" id="teaser-sound" type="button">
+          <span class="icon"><i class="fas fa-volume-high"></i></span><span>Play with sound</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+<script>
+  (() => {
+    const v = document.getElementById('teaser-video');
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      v.removeAttribute('autoplay');
+      v.pause();
+    }
+    document.getElementById('teaser-sound').addEventListener('click', () => {
+      v.currentTime = 0;
+      v.muted = false;
+      v.play();
+    });
+    // Once the narration is audible, play through once instead of looping, and drop the button.
+    v.addEventListener('volumechange', () => {
+      if (v.muted) return;
+      v.loop = false;
+      document.getElementById('teaser-sound-row').hidden = true;
+    });
+  })();
+</script>
+
+<!-- ================= Teaser ================= -->
 <section class="hero teaser">
   <div class="container is-max-desktop">
     <div class="hero-body">
-      <table style="width: 100%;">
-        <tr>
-          <td align="center" style="width: 50%;">
-            <img src="./static/images/flowchart.drawio-1.png" width="99%" alt="Flowchart">
-          </td>
-          <td align="center" style="width: 50%;">
-            <img src="./static/images/graphicalabstract.drawio_v2-1.png" width="99%" alt="Graphical Abstract">
-          </td>
-        </tr>
-      </table>
+      <img src="static/images/fig1_overview.png" width="1513" height="855"
+           alt="Top: decoded faces change smoothly between two reconstructed images, Image A and Image B. Bottom: moving along single latent dimensions adds or removes sunglasses, facial hair, and long hair on three faces each.">
       <h2 class="subtitle has-text-centered">
-        (<em>Left</em>) Flow chart demonstrating auxiliary-variable diffusion model with mutual information and prior regularization. (<em>Right</em>) InfoDiffusion produces semantically meaningful latent space for a diffusion model. (<em>Top</em>) Smooth latent space. (<em>Bottom</em>) Disentangled, human-interpretable factors of variation.
+        <b>A semantically meaningful latent space for a diffusion model.</b> InfoDiffusion adds a low-dimensional
+        latent \(\bz\) to a diffusion model. The latent space is smooth (top), and individual dimensions capture
+        disentangled, human-interpretable factors of variation (bottom).
       </h2>
     </div>
   </div>
 </section>
 
-
-<section class="section">
+<!-- ================= Abstract ================= -->
+<section class="section hero is-light">
   <div class="container is-max-desktop">
-    <!-- Abstract. -->
     <div class="columns is-centered has-text-centered">
       <div class="column is-four-fifths">
-        <h2 class="title is-4">Abstract</h2>
-        <div class="content has-text-justified">
+        <h2 class="title is-3">Abstract</h2>
+        <div class="content has-text-justified abstract">
           <p>
-            While diffusion models excel at generating high-quality samples, their latent variables typically lack semantic meaning and are not suitable for representation learning.
-            Here, we propose InfoDiffusion, an algorithm that augments diffusion models with low-dimensional latent variables that capture high-level factors of variation in the data.
-            InfoDiffusion relies on a learning objective regularized with the mutual information between observed and hidden variables, which improves latent space quality and prevents the latents from being ignored by expressive diffusion-based decoders.
-            Empirically, we find that InfoDiffusion learns disentangled and human-interpretable latent representations that are competitive with state-of-the-art generative and contrastive methods, while retaining the high sample quality of diffusion models. 
-            Our method enables manipulating the attributes of generated images and has the potential to assist tasks that require exploring a learned latent space to generate quality samples, e.g., generative design.
+            While diffusion models excel at generating high-quality samples, their latent variables typically lack
+            semantic meaning and are not suitable for representation learning. Here, we propose InfoDiffusion, an
+            algorithm that augments diffusion models with low-dimensional latent variables that capture high-level
+            factors of variation in the data. InfoDiffusion relies on a learning objective regularized with the mutual
+            information between observed and hidden variables, which is designed to improve latent space quality and to
+            prevent the latents from being ignored by expressive diffusion-based decoders. Empirically, we find that
+            InfoDiffusion learns disentangled and human-interpretable latent representations that are competitive with
+            state-of-the-art generative and contrastive methods, while retaining the high sample quality of diffusion
+            models. Our method enables manipulating the attributes of generated images and has the potential to assist
+            tasks that require exploring a learned latent space to generate quality samples, e.g., generative design.
           </p>
         </div>
       </div>
     </div>
-    <!--/ Abstract. -->
+  </div>
+</section>
+
+<!-- ================= Method ================= -->
+<section class="section" id="method">
+  <div class="container is-max-desktop content">
+    <h2 class="title is-3">Diffusion Models with Auxiliary Latents</h2>
+
+    <div class="columns is-vcentered">
+      <div class="column is-7">
+        <p>
+          Diffusion models produce high-quality samples but lack an interpretable low-dimensional latent space.
+          InfoDiffusion adds a low-dimensional auxiliary latent \(\bz\), with a prior \(p(\bz)\), on which every
+          denoising step is conditioned:
+        </p>
+        \[
+          p(\bx_{0:T}, \bz) = p(\bx_T)\, p(\bz) \prod_{t=1}^{T} p_\theta(\bx_{t-1} \mid \bx_t, \bz).
+        \]
+        <p>
+          The noising process does not depend on \(\bz\): \(\bz\) is a representation of the input, not a control
+          variable of diffusion. An encoder \(q_\phi(\bz \mid \bx_0)\) infers it, and applying variational inference
+          twice gives an ELBO \(\mathcal{L}_D\) for the model. The prior can be a simple Gaussian, encode domain
+          knowledge (e.g., a mixture of \(K\) components for \(K\) classes), or be discrete.
+        </p>
+      </div>
+      <div class="column is-5">
+        <figure class="paper-figure" style="margin:0">
+          <img src="static/images/fig2_flowchart.png" width="1084" height="1050"
+               alt="Flow chart: the encoder maps x0 to z, which conditions every reverse step p_theta(x_{t-1} | x_t, z) of the diffusion process; mutual information maximization links x0 and z, and prior regularization matches z to a flexible prior p(z).">
+          <figcaption>Auxiliary-variable diffusion with mutual information and prior regularization.</figcaption>
+        </figure>
+      </div>
+    </div>
+
+    <h3 class="title">Keeping the latents in use</h3>
+    <p>
+      Auxiliary latents face two risks: an expressive decoder may ignore a low-dimensional \(\bz\) and generate
+      \(\bx_{t-1}\) unconditionally, and the aggregate posterior \(q_\phi(\bz) = \mathbb{E}_{q(\bx_0)}[q_\phi(\bz\mid\bx_0)]\)
+      may fail to match the prior, which degrades both sampling and the latent representation. InfoDiffusion counters
+      them with a mutual-information term and a prior regularizer:
+    </p>
+    \[
+      \mathbb{E}_{q(\bx_0)}\big[\mathcal{L}_D(\bx_0)\big] + \zeta \cdot \MI_{\bx_0,\bz} - \beta \cdot \D\big(q_\phi(\bz)\,\|\,p(\bz)\big).
+    \]
+    <p>
+      Both regularizers are intractable. Following InfoVAE, with \(\lambda := \beta + 1\) the objective can be
+      rewritten in a tractable form:
+    </p>
+    \[
+      \mathcal{L}_I = \mathcal{L}_{\text{denoise}}
+      - (1-\zeta)\, \mathbb{E}_{q(\bx_0)}\big[\KL\big(q_\phi(\bz\mid\bx_0)\,\|\,p(\bz)\big)\big]
+      - (\lambda+\zeta-1)\, \KL\big(q_\phi(\bz)\,\|\,p(\bz)\big),
+    \]
+    <p>
+      where \(\mathcal{L}_{\text{denoise}}\) collects the reconstruction and denoising terms of the ELBO. The KL divergence
+      between \(q_\phi(\bz)\) and \(p(\bz)\) can be replaced by any strict divergence \(\D\) without changing the global
+      optimum, under conditions given in the paper (including \(\zeta \le 1\) and \(\lambda + \zeta - 1 \ge 0\)).
+      We use the maximum mean discrepancy (MMD) with a sum of inverse multiquadratic kernels.
+    </p>
+
+    <p>
+      <b>Special cases.</b> With one diffusion step (\(T = 1\)), InfoDiffusion is an InfoVAE, up to the decoder
+      architecture; adding \(\lambda = 1 - \zeta\) gives a \(\beta\)-VAE with \(\beta_{\text{VAE}} = 1 - \zeta\), and \(\zeta = 1\) with an
+      adversarial or MMD divergence gives an adversarial or Wasserstein auto-encoder. With \(\zeta = 1\) and
+      \(\lambda = 0\), both regularizers vanish and a deterministic encoder recovers DiffAE.
+    </p>
+    <p>
+      The main setting, \((\lambda, \zeta) = (0.1, 0.9)\), satisfies \(\lambda = 1 - \zeta\): the marginal divergence
+      term vanishes, and the objective is that of a \(\beta\)-VAE with \(\beta_{\text{VAE}} = 0.1\) and a diffusion
+      decoder.
+    </p>
+    <div class="table-wrap">
+      <table class="results compact">
+        <thead>
+          <tr><th class="l"></th><th class="c">Semantic<br>latents</th><th class="c">Discrete<br>latents</th><th class="c">Custom<br>prior</th><th class="c">Max<br>MI</th><th class="c">HQ<br>samples</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="l">AE</td><td class="c no">✗</td><td class="c no">✗</td><td class="c no">✗</td><td class="c no">✗</td><td class="c no">✗</td></tr>
+          <tr><td class="l">VAE</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c no">✗</td><td class="c no">✗</td></tr>
+          <tr><td class="l">\(\beta\)-VAE</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c no">✗</td><td class="c no">✗</td></tr>
+          <tr><td class="l">AAE</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c no">✗</td></tr>
+          <tr><td class="l">InfoVAE</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c no">✗</td></tr>
+          <tr class="group-start"><td class="l">DDPM</td><td class="c no">✗</td><td class="c no">✗</td><td class="c no">✗</td><td class="c no">✗</td><td class="c yes">✓</td></tr>
+          <tr><td class="l">DiffAE</td><td class="c yes">✓</td><td class="c no">✗</td><td class="c no">✗</td><td class="c no">✗</td><td class="c yes">✓</td></tr>
+          <tr class="ours"><td class="l">InfoDiffusion</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c yes">✓</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="table-caption has-text-centered" style="margin-bottom:0">
+      Auto-encoder (top) and diffusion (bottom) frameworks compared with InfoDiffusion.
+    </p>
   </div>
 </section>
 
+<!-- ================= Implementation ================= -->
+<section class="section hero is-light" id="implementation">
+  <div class="container is-max-desktop content">
+    <h2 class="title is-3">Implementation</h2>
+    <p>
+      <b>Continuous-time decoder.</b> We use the linear noising process
+      \(\bx_t = (1-t)\,\bx_0 + t\,\beps\), \(t \in [0, 1]\), of rectified flow, and the network predicts the velocity
+      \(\bv_\theta(\bx_t, t, \bz) \approx \beps - \bx_0\). The denoising terms of the ELBO then reduce to a weighted
+      regression loss,
+    </p>
+    \[
+      \mathbb{E}_{t,\beps}\Big[\, w(t)\, \big\| \bv_\theta(\bx_t, t, \bz) - (\beps - \bx_0) \big\|^2 \Big],
+    \]
+    <p>
+      where the weighting \(w(t)\) is set by the distribution of \(t\) (logit-normal on most datasets). The decoder is
+      an ADM-style U-Net. A two-layer MLP embeds \(\bz\), and the embedding modulates every residual block after the
+      time-conditioned adaptive group normalization:
+      \(\bh \leftarrow (1+\bs(\bz)) \cdot \mathrm{AGN}(\bh, t) + \bb(\bz)\).
+    </p>
+    <figure class="paper-figure">
+      <img src="static/images/arch_unet.svg" width="752" height="292" loading="lazy"
+           alt="U-Net decoder: four encoder levels, a middle block with attention and four decoder levels with skip connections; the time embedding and the z embedding (or a null embedding) feed all residual blocks.">
+      <figcaption>
+        <b>The \(\bz\)-conditioned U-Net decoder.</b> The embeddings of \(t\) and \(\bz\) are passed to every residual
+        block. With latent dropout, the embedding of \(\bz\) is replaced by a learned null embedding \(\varnothing\).
+        \(C\) is the base width and \(k\) the channel multiplier of a level.
+      </figcaption>
+    </figure>
+    <figure class="paper-figure medium">
+      <img src="static/images/arch_blocks.svg" width="802" height="420" loading="lazy"
+           alt="Left: residual block in which group-normalized features are scaled and shifted first by the time embedding and then by the z embedding. Right: six-block residual MLP with adaptive layer normalization that predicts the velocity of the learned latent prior.">
+      <figcaption>
+        <i>Left:</i> the auxiliary residual block: normalized features are modulated first by the time embedding and
+        then by the embedding of \(\bz\). <i>Right:</i> the velocity network of the learned latent prior.
+      </figcaption>
+    </figure>
+
+    <p>
+      <b>Encoder.</b> The downsampling half of a U-Net, followed by a linear head on the spatially averaged or
+      flattened final feature map. During training it sees a random resized crop of \(\bx_0\) (70&ndash;100% of the
+      side, except on 3DShapes), while the decoder denoises the full image. For \(\zeta = 1\) the encoder is
+      deterministic; for \(\zeta < 1\), as in the main setting, \(q_\phi(\bz\mid\bx_0)\) is a diagonal Gaussian.
+      The noise \(\bx_T\) of an image is inferred by integrating the probability-flow ODE conditioned on its \(\bz\).
+    </p>
+    <p>
+      <b>Sampling.</b> We draw \(\bz\) either from the prior \(p(\bz)\) or from a learned latent prior, a flow-matching
+      MLP fit to the encodings of the training images (as in DiffAE, a second generative model over \(\bz\)), and
+      integrate the probability-flow ODE with Heun's method. Both samplers can use classifier-free guidance on \(\bz\):
+      the generative models (\(d_z = 256\)) are trained with latent dropout (probability 0.1), and the guided velocity
+      with weight \(w\) is
+    </p>
+    \[
+      \bv_\theta(\bx_t, t, \varnothing) + w\, \big( \bv_\theta(\bx_t, t, \bz) - \bv_\theta(\bx_t, t, \varnothing) \big).
+    \]
+    <p>
+      <b>Discrete latents.</b> Finite scalar quantization (FSQ) bounds and rounds each encoder output to \(L\) levels,
+      \(z_i = \mathrm{round}(c \tanh h_i)/c\) with \(c = (L-1)/2\), with straight-through gradients and a uniform prior
+      over the \(L^{d_z}\) codes. It needs neither a codebook nor auxiliary losses.
+    </p>
+  </div>
 </section>
-<div class="container is-max-desktop">
-  <!-- Background -->
-  <div class="columns is-centered">
-    <div class="column is-full-width">
-      <h2 class="title is-4">Background</h2>
-      <div class="content has-text-justified">
-        <p>
-          A diffusion model describes how data \(\mathbf{x}_0\) sampled from the data distribution transforms gradually into random Gaussian noise \(\mathbf{x}_T\) through a series of latent variables \(\mathbf{x}_{1:T}\). This process is defined by a latent variable distribution \(p(\mathbf{x}_{0:T})\), which can be factorized as a Markov chain:
-        </p>
-        <div style="text-align: center;">
-          \( p(\mathbf{x}_{0:T}) = p(\mathbf{x}_T) \prod_{t=0}^{T-1} p_{\theta}(\mathbf{x}_t | \mathbf{x}_{t+1}) \)
-        </div>
-        <p>
-          The noising process \(q\) starts with clean data \(\mathbf{x}_0\) from the data distribution \(q(\mathbf{x}_0)\) and gradually corrupts it through a sequence of variables \(\mathbf{x}_{1:T}\) in a Markov chain:
-        </p>
-        <div style="text-align: center;">
-          \( q(\mathbf{x}_{1:T} | \mathbf{x}_0) = \prod_{t=1}^{T} q(\mathbf{x}_t | \mathbf{x}_{t-1}) \)
-        </div>
-        <p>
-          Each step \(q(\mathbf{x}_t | \mathbf{x}_{t-1})\) is modeled as a Gaussian distribution with a schedule \(\alpha_t\). The marginal distribution of \(q\) is:
-        </p>
-        <div style="text-align: center;">
-          \( q(\mathbf{x}_t | \mathbf{x}_0) = \mathcal{N}(\mathbf{x}_t; \sqrt{\bar{\alpha}_t} \mathbf{x}_0, \sqrt{1 - \bar{\alpha}_t} \mathbf{I}) \)
-        </div>
-        <p>
-          where \(\bar{\alpha}_t\) is the cumulative product of the schedule parameters \(\alpha_t\).
-        </p>
-        <p>
-          To train \(p\), we maximize the evidence lower bound (ELBO) using variational inference:
-        </p>
-        <div style="text-align: center;">
-          \( \log p(\mathbf{x}_0) \geq \mathbb{E}_{q(\mathbf{x}_1 | \mathbf{x}_0)} [ \log p_{\theta}(\mathbf{x}_0 | \mathbf{x}_1) ] - \text{KL}(q(\mathbf{x}_T | \mathbf{x}_0) \| p(\mathbf{x}_T)) - \sum_{t=2}^{T} \mathbb{E}_{q(\mathbf{x}_t | \mathbf{x}_0)} [ \text{KL}(q(\mathbf{x}_{t-1} | \mathbf{x}_t, \mathbf{x}_0) \| p_{\theta}(\mathbf{x}_{t-1} | \mathbf{x}_t)) ]. \)
-        </div>
-      </div>
-    </div>
-  </div>
-  <!--/ Background -->
-  
-  <!-- Unsupervised Representation Learning -->
-  <div class="columns is-centered">
-    <div class="column is-full-width">
-      <h2 class="title is-5">Unsupervised Representation Learning</h2>
-      <div class="content has-text-justified">
-        <p>
-          A key goal of generative modeling is representation learning: extracting latent concepts from data without supervision. Generative models \(p(\mathbf{x}, \mathbf{z})\) typically use low-dimensional variables \(\mathbf{z}\) to represent latent concepts, inferred via posterior inference over \(p(\mathbf{z} | \mathbf{x})\).
-          Variational Autoencoders (VAEs) follow this framework but do not produce state-of-the-art samples. Diffusion models, on the other hand, generate high-quality samples but lack an interpretable low-dimensional latent space, making them less suitable for representation learning.
-        </p>
-      </div>
-    </div>
-  </div>
-  <!--/ Unsupervised Representation Learning -->
-  
-  <!-- Diffusion Models With Auxiliary Latents -->
-  <div class="columns is-centered">
-    <div class="column is-full-width">
-      <h2 class="title is-4">Diffusion Models With Auxiliary Latents</h2>
-      <div class="content has-text-justified">
-        <p>
-          We introduce a diffusion model with a semantically meaningful latent space while maintaining high sample quality. Our approach includes three main steps:
-        </p>
-        <ol>
-          <li>Define a diffusion model family with low-dimensional latent variables.</li>
-          <li>Specify learning objectives for this model family.</li>
-          <li>Introduce a regularizer based on mutual information to enhance the quality of latents.</li>
-        </ol>
-        <p>
-          We define an auxiliary-variable diffusion model as:
-        </p>
-        <div style="text-align: center;">
-          \( p(\mathbf{x}_{0:T}, \mathbf{z}) = p(\mathbf{x}_T) p(\mathbf{z}) \prod_{t=1}^{T} p_{\theta}(\mathbf{x}_{t-1} | \mathbf{x}_t, \mathbf{z}) \)
-        </div>
-        <p>
-          This model performs a reverse diffusion process \(p_{\theta}(\mathbf{x}_{t-1} | \mathbf{x}_t, \mathbf{z})\) over \(\mathbf{x}_{0:T}\) conditioned on auxiliary latents \(\mathbf{z}\), which are distributed according to a prior \(p(\mathbf{z})\).
-        </p>
-      </div>
-    </div>
-  </div>
-  <!--/ Diffusion Models With Auxiliary Latents -->
-  
-  <!-- Auxiliary Latent Variables and Semantic Prior -->
-  <div class="columns is-centered">
-    <div class="column is-full-width">
-      <h2 class="title is-5">Auxiliary Latent Variables and Semantic Prior</h2>
-      <div class="content has-text-justified">
-        <p>
-          The auxiliary latents \(\mathbf{z}\) aim to encode high-level representations of \(\mathbf{x}_0\). These latents are not restricted in dimension and can be continuous or discrete, representing various factors of variation.
-          The prior \(p(\mathbf{z})\) ensures a principled probabilistic model, allowing unconditional sampling of \(\mathbf{x}_0\) and encoding domain knowledge about \(\mathbf{z}\). For example, if the dataset has \(K\) distinct classes, we can set \(p(\mathbf{z})\) to be a mixture of \(K\) components.
-        </p>
-      </div>
-    </div>
-  </div>
-  <!--/ Auxiliary Latent Variables and Semantic Prior -->
-  
-  <!-- Auxiliary-Variable Diffusion Decoder -->
-  <div class="columns is-centered">
-    <div class="column is-full-width">
-      <h2 class="title is-5">Auxiliary-Variable Diffusion Decoder</h2>
-      <div class="content has-text-justified">
-        <p>
-          The decoder \(p_{\theta}(\mathbf{x}_{t-1} | \mathbf{x}_t, \mathbf{z})\) is conditioned on the auxiliary latents \(\mathbf{z}\). In a trained model, \(\mathbf{z}\) captures high-level concepts (e.g., age or skin color), while the sequence of \(\mathbf{x}_t\) progressively adds lower-level details (e.g., hair texture).
-          Following previous work, we define the decoder as:
-        </p>
-        <div style="text-align: center;">
-          \( p_{\theta}(\mathbf{x}_{t-1} | \mathbf{x}_t, \mathbf{z}) = \frac{1}{\sqrt{\alpha_t}}(\mathbf{x}_t - (1-\alpha_t) / \sqrt{1-\bar{\alpha}_t} \epsilon_{\theta}(\mathbf{x}_{t-1}, t, \mathbf{z})) \)
-        </div>
-      </div>
-    </div>
-  </div>
-  <!--/ Auxiliary-Variable Diffusion Decoder -->
 
-    <!-- InfoDiffusion: Regularizing Semantic Latents By Maximizing Mutual Information -->
-    <div class="columns is-centered">
-      <div class="column is-full-width">
-        <h2 class="title is-4">InfoDiffusion: Regularizing Semantic Latents By Maximizing Mutual Information</h2>
-        <div class="content has-text-justified">
-          <p>
-            Diffusion models with auxiliary latents face two main risks. First, an expressive decoder \(p_\theta(\mathbf{x}_{t-1}\mid\mathbf{x}_t, \mathbf{z})\) may ignore low-dimensional latents \(\mathbf{z}\) and generate \(\mathbf{x}_{t-1}\) unconditionally. Second, the approximate posterior \(q_\phi(\mathbf{z}\mid\mathbf{x}_0)\) may fail to match the prior \(p(\mathbf{z})\) due to weak prior regularization relative to the reconstruction term. This degrades the quality of both ancestral sampling and latent representations.
-          </p>
-          
-          <h3 class="title is-5">Regularizing Auxiliary-Variable Diffusion</h3>
-          <p>
-            To address these issues, we propose two regularization terms: a mutual information term and a prior regularizer. We refer to this approach as InfoDiffusion.
-          </p>
-          
-          <h4 class="title is-6">Mutual Information Regularization</h4>
-          <p>
-            To ensure the model does not ignore the latents \(\mathbf{z}\), we augment the learning objective with a mutual information term between \(\mathbf{x}_0\) and \(\mathbf{z}\) under \(q_\phi(\mathbf{x}_0, \mathbf{z})\), the joint distribution over observed data \(\mathbf{x}_0\) and latent variables \(\mathbf{z}\). Formally, the mutual information regularizer is defined as:
-          </p>
-          <div style="text-align: center;">
-            \(\mathrm{MI}_{\mathbf{x}_0, \mathbf{z}} = \mathbb{E}_{q_\phi(\mathbf{x}_0, \mathbf{z})}\left[ \log \frac{q_\phi(\mathbf{x}_0, \mathbf{z})}{q(\mathbf{x}_0)q_\phi(\mathbf{z})} \right]\)
-          </div>
-          <p>
-            Here, \(q_\phi(\mathbf{z})\) is the marginal approximate posterior distribution, defined as the marginal of the product \(q_\phi(\mathbf{z}\mid\mathbf{x}_0)q(\mathbf{x}_0)\). Maximizing mutual information encourages the model to generate \(\mathbf{x}_0\) from which \(\mathbf{z}\) can be predicted.
-          </p>
-          
-          <h4 class="title is-6">Prior Regularization</h4>
-          <p>
-            To prevent a degenerate approximate posterior, we regularize the encoded samples \(\mathbf{z}\) to resemble the prior \(p(\mathbf{z})\). The prior regularizer is defined as:
-          </p>
-          <div style="text-align: center;">
-            \(\mathcal{R} = \text{D}(q_\phi(\mathbf{z})\|p(\mathbf{z}))\)
-          </div>
-          <p>
-            where \(\text{D}\) is any strict divergence.
-          </p>
-          
-          <h3 class="title is-5">A Tractable Objective for InfoDiffusion</h3>
-          <p>
-            We train InfoDiffusion by maximizing a regularized ELBO objective:
-          </p>
-          <div style="text-align: center;">
-            \(\mathbb{E}_{q(\mathbf{x}_0)}[\mathcal{L}_D(\mathbf{x}_0)] + \zeta \cdot \mathrm{MI}_{\mathbf{x}_0, \mathbf{z}} - \beta \cdot \mathcal{R}\)
-          </div>
-          <p>
-            where \(\mathcal{L}_D(\mathbf{x}_0)\) is from the denoising objective, and \(\zeta, \beta > 0\) are scalars controlling the regularization strength. We can rewrite this objective into a tractable form:
-          </p>
-            <div style="text-align: center;">
-            \(\mathcal{L}_I = \mathbb{E}_{q(\mathbf{x}_0, \mathbf{x}_1)}\left[\mathbb{E}_{q_{\mathbf{z}}}\left[\log p_{\theta}(\mathbf{x}_0|\mathbf{x}_1, \mathbf{z})\right]\right] - \mathbb{E}_{q(\mathbf{x}_0)}[\mathrm{KL}(q(\mathbf{x}_T | \mathbf{x}_0) \| p(\mathbf{x}_T))] \)
-            \(- \sum_{t=2}^{T} \mathbb{E}_{q(\mathbf{x}_0, \mathbf{x}_t)}\left[\mathbb{E}_{q_{\mathbf{z}}} \left[\mathrm{KL}(q(\mathbf{x}_{t-1}|\mathbf{x}_t, \mathbf{x}_0) \| p_{\theta}(\mathbf{x}_{t-1}|\mathbf{x}_t, \mathbf{z}))\right]\right]\)
-            \(- (1-\zeta) \mathbb{E}_{q(\mathbf{x}_0)} [\mathrm{KL}(q_\phi(\mathbf{z}\mid\mathbf{x}_0)\|p(\mathbf{z}))] - (\lambda + \zeta-1) \mathrm{KL}(q_\phi(\mathbf{z}) \| p(\mathbf{z}))\)
-          </div>
-          where We now state that \( \text{KL}(q_\phi(\mathbf{z}) || p(\mathbf{z})) \) can be replaced with any strict divergence \( \text{D}(q_\phi(\mathbf{z}) || p(\mathbf{z})) \) without any modification (see our paper for the full derivation).
-          
-          <h3 class="title is-5">Comparing InfoDiffusion to Existing Models</h3>
-          <p>
-            The InfoDiffusion algorithm generalizes several existing methods. When the decoder performs one step of diffusion (\(T=1\)), it is equivalent to <a href="https://arxiv.org/abs/1706.02262">InfoVAE</a> Choosing \(\lambda=0\) recovers the <a href="https://openreview.net/forum?id=Sy2fzU9gl">\(\beta\)-VAE</a> model. When \(T=1\) and \(\text{D}\) is the Jensen-Shannon divergence, it recovers <a href="https://arxiv.org/abs/1511.05644">adversarial auto-encoders (AAEs)</a>. InfoDiffusion extends these models to diffusion decoders, similar to how DDPM extends VAEs. When \(\zeta=\lambda=0\), it recovers <a href="https://arxiv.org/abs/2111.15640">DiffAE</a>.
-          </p>
+<!-- ================= Latent space ================= -->
+<section class="section" id="latents">
+  <div class="container is-max-desktop content">
+    <h2 class="title is-3">Exploring the Latent Space</h2>
+
+    <div class="columns is-vcentered">
+      <div class="column is-5">
+        <p>
+          <b>\(\bz\) captures high-level semantics.</b> Decoding the inferred \(\bz\) of an image with different noise
+          \(\bx_T\) changes its lower-level features, such as the background and hair style.
+        </p>
+      </div>
+      <div class="column is-7">
+        <figure class="paper-figure" style="margin:0">
+          <img src="static/images/fig3_semantics.png" width="1036" height="587" loading="lazy"
+               alt="Three face images in red boxes, each followed by four decodings of its latent z with different noise x_T.">
+          <figcaption>Varying \(\bx_T \sim \mathcal{N}(\bzero, \bI)\) across each row changes lower-level detail. The red box marks the original image.</figcaption>
+        </figure>
+      </div>
+    </div>
+
+    <h3 class="title">Smooth interpolation</h3>
+    <p>
+      We encode two images into \((\bz, \bx_T)\) and decode 10 points along a path between them, interpolating \(\bz\) along a
+      quarter circle and \(\bx_T\) spherically. InfoDiffusion combines the smooth interpolation of variational methods
+      with the sample quality of diffusion models.
+    </p>
+    <figure class="paper-figure medium">
+      <img src="static/images/fig5_interpolation.png" width="1324" height="814" loading="lazy"
+           alt="Interpolations between the same two faces for a VAE, an InfoVAE, DiffAE and InfoDiffusion, with the reconstructed end points in red boxes.">
+      <figcaption>
+        <b>Latent space interpolation</b> for (a) VAE, (b) InfoVAE, (c) DiffAE and (d) InfoDiffusion. Reconstructions
+        of the two original images are at the ends of each row (red boxes).
+      </figcaption>
+    </figure>
+
+    <h3 class="title">Disentangled dimensions</h3>
+    <p>
+      The learned latents contain disentangled components: for example, one dimension of \(\bz\) controls smiling.
+      For metrics of disentanglement, see the results below.
+    </p>
+    <figure class="paper-figure">
+      <img src="static/images/fig4_smile.png" width="1437" height="330" loading="lazy"
+           alt="Two faces decoded while one latent dimension is traversed: the smile fades from left to right.">
+      <figcaption>
+        <b>A smile dimension.</b> Images produced by a linear traversal along one dimension of \(\bz\), from \(-1.5\) to \(1.5\).
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ================= Results ================= -->
+<section class="section hero is-light" id="results">
+  <div class="container is-max-desktop content">
+    <h2 class="title is-3">Results</h2>
+    <p>
+      We compare InfoDiffusion to an AE, a VAE, a \(\beta\)-VAE, an InfoVAE and DiffAE on FashionMNIST, CIFAR10,
+      FFHQ, CelebA and 3DShapes. InfoDiffusion uses \((\lambda, \zeta) = (0.1, 0.9)\). Latents are evaluated with
+      \(d_z = 32\) models (\(d_z = 10\) on 3DShapes), and sample quality with \(d_z = 256\) models trained with latent
+      dropout. <b>Latent quality</b> is the held-out accuracy or AUROC of a logistic-regression classifier trained on
+      \(\bz\) (5-fold cross-validation); FID is computed with clean-FID from 10,000 samples against the training set.
+      For InfoDiffusion, &plusmn; is the standard deviation over three training seeds.
+    </p>
+
+    <h3 class="title">Informative latents and high-quality samples</h3>
+    <div class="table-wrap">
+      <table class="results">
+        <thead>
+          <tr class="group"><th class="blank"></th><th colspan="2">FashionMNIST</th><th colspan="2">CIFAR10</th><th colspan="2">FFHQ</th></tr>
+          <tr><th class="l">Method</th><th>Latent qual. ↑</th><th>FID ↓</th><th>Latent qual. ↑</th><th>FID ↓</th><th>Latent qual. ↑</th><th>FID ↓</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="l">AE</td><td>0.819<span class="pm">±0.003</span></td><td>62.9<span class="pm">±2.1</span></td><td>0.336<span class="pm">±0.005</span></td><td>169.4<span class="pm">±2.4</span></td><td>0.532<span class="pm">±0.002</span></td><td>316.7<span class="pm">±0.4</span></td></tr>
+          <tr><td class="l">VAE</td><td>0.796<span class="pm">±0.002</span></td><td>63.4<span class="pm">±1.6</span></td><td>0.342<span class="pm">±0.004</span></td><td>177.2<span class="pm">±3.2</span></td><td>0.488<span class="pm">±0.002</span></td><td>307.7<span class="pm">±0.1</span></td></tr>
+          <tr><td class="l">\(\beta\)-VAE</td><td>0.779<span class="pm">±0.004</span></td><td>66.9<span class="pm">±1.8</span></td><td>0.253<span class="pm">±0.003</span></td><td>183.3<span class="pm">±3.1</span></td><td>0.510<span class="pm">±0.001</span></td><td>222.6<span class="pm">±0.2</span></td></tr>
+          <tr><td class="l">InfoVAE</td><td>0.807<span class="pm">±0.003</span></td><td>55.0<span class="pm">±1.7</span></td><td>0.357<span class="pm">±0.005</span></td><td>160.7<span class="pm">±2.5</span></td><td>0.545<span class="pm">±0.001</span></td><td>195.2<span class="pm">±0.5</span></td></tr>
+          <tr><td class="l">DiffAE</td><td><u>0.822</u><span class="pm">±0.006</span></td><td><b>5.6</b><span class="pm">±0.1</span></td><td><u>0.442</u><span class="pm">±0.004</span></td><td>34.1<span class="pm">±0.1</span></td><td><u>0.565</u><span class="pm">±0.001</span></td><td><u>12.1</u><span class="pm">±0.1</span></td></tr>
+          <tr class="ours group-start"><td class="l">InfoDiffusion</td><td><b>0.856</b><span class="pm">±0.004</span></td><td>22.5<span class="pm">±0.6</span></td><td><b>0.461</b><span class="pm">±0.003</span></td><td>36.2<span class="pm">±1.1</span></td><td><b>0.628</b><span class="pm">±0.002</span></td><td>19.8<span class="pm">±0.4</span></td></tr>
+          <tr class="ours sub"><td class="l">w/ guidance (\(w = 2\))</td><td></td><td>21.9<span class="pm">±0.7</span></td><td></td><td>33.7<span class="pm">±1.0</span></td><td></td><td>15.7<span class="pm">±0.7</span></td></tr>
+          <tr class="ours sub"><td class="l">w/ learned latent</td><td></td><td>8.1<span class="pm">±0.4</span></td><td></td><td><u>25.7</u><span class="pm">±0.4</span></td><td></td><td>13.1<span class="pm">±0.5</span></td></tr>
+          <tr class="ours sub"><td class="l">w/ learned latent, \(w = 2\)</td><td></td><td><u>6.8</u><span class="pm">±0.7</span></td><td></td><td><b>21.3</b><span class="pm">±0.7</span></td><td></td><td><b>9.8</b><span class="pm">±0.3</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="table-caption">
+      Latent quality is classification accuracy (FashionMNIST, CIFAR10) or the average accuracy over age, gender and
+      eyeglasses (FFHQ). InfoDiffusion rows without "learned latent" draw \(\bz \sim p(\bz)\); \(w\) is the guidance
+      weight on \(\bz\). Bold marks the best and underline the second-best value. For the baselines, &plusmn; is over
+      cross-validation folds (latent quality) or sample sets (FID).
+    </p>
+    <p>
+      The compact latents of InfoDiffusion are the most informative of labels on all three datasets. With latents drawn
+      from the learned latent prior and guidance on \(\bz\), it attains the lowest FID on CIFAR10 and FFHQ and the second
+      lowest on FashionMNIST, after DiffAE.
+    </p>
+
+    <h3 class="title">Disentanglement</h3>
+    <div class="table-wrap">
+      <table class="results">
+        <thead>
+          <tr class="group"><th class="blank"></th><th colspan="2">3DShapes</th><th colspan="4">CelebA</th></tr>
+          <tr><th class="l">Method</th><th>DCI ↑</th><th class="c">Image qual.</th><th>TAD ↑</th><th>Attrs ↑</th><th>Latent qual. ↑</th><th>FID ↓</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="l">AE</td><td>0.219<span class="pm">±0.001</span></td><td class="c no">✗</td><td>0.042<span class="pm">±0.004</span></td><td>1.0<span class="pm">±0.0</span></td><td>0.759<span class="pm">±0.003</span></td><td>90.4<span class="pm">±1.8</span></td></tr>
+          <tr><td class="l">VAE</td><td>0.276<span class="pm">±0.001</span></td><td class="c no">✗</td><td>0.000<span class="pm">±0.000</span></td><td>0.0<span class="pm">±0.0</span></td><td>0.770<span class="pm">±0.002</span></td><td>94.3<span class="pm">±2.8</span></td></tr>
+          <tr><td class="l">\(\beta\)-VAE</td><td><u>0.281</u><span class="pm">±0.001</span></td><td class="c no">✗</td><td>0.088<span class="pm">±0.051</span></td><td>1.6<span class="pm">±0.8</span></td><td>0.699<span class="pm">±0.001</span></td><td>99.8<span class="pm">±2.4</span></td></tr>
+          <tr><td class="l">InfoVAE</td><td>0.134<span class="pm">±0.001</span></td><td class="c no">✗</td><td>0.000<span class="pm">±0.000</span></td><td>0.0<span class="pm">±0.0</span></td><td>0.757<span class="pm">±0.003</span></td><td>77.8<span class="pm">±1.6</span></td></tr>
+          <tr><td class="l">DiffAE</td><td>0.177<span class="pm">±0.001</span></td><td class="c yes">✓</td><td><u>0.114</u><span class="pm">±0.033</span></td><td><u>2.8</u><span class="pm">±0.4</span></td><td><u>0.817</u><span class="pm">±0.001</span></td><td>8.4<span class="pm">±0.1</span></td></tr>
+          <tr class="ours group-start"><td class="l">InfoDiffusion</td><td><b>0.296</b><span class="pm">±0.057</span></td><td class="c no">✗</td><td><b>0.439</b><span class="pm">±0.134</span></td><td><b>5.7</b><span class="pm">±0.6</span></td><td><b>0.844</b><span class="pm">±0.005</span></td><td>12.1<span class="pm">±0.2</span></td></tr>
+          <tr class="ours sub"><td class="l">w/ guidance (\(w = 2\))</td><td></td><td></td><td></td><td></td><td></td><td>11.1<span class="pm">±0.3</span></td></tr>
+          <tr class="ours sub"><td class="l">w/ learned latent</td><td></td><td class="c yes">✓</td><td></td><td></td><td></td><td><u>7.6</u><span class="pm">±0.2</span></td></tr>
+          <tr class="ours sub"><td class="l">w/ learned latent, \(w = 2\)</td><td></td><td></td><td></td><td></td><td></td><td><b>6.3</b><span class="pm">±0.2</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="table-caption">
+      DCI: disentanglement term of the DCI score. Image quality on 3DShapes is judged from 16 samples, drawn with
+      \(\bz \sim p(\bz)\) (first row) or from the learned latent prior. An attribute is captured if some dimension of
+      \(\bz\) detects it with AUROC \(\ge 0.75\); TAD sums, over the captured attributes, the AUROC gap between the two
+      most predictive dimensions, and Attrs counts them. CelebA latent quality is the AUROC averaged over the 40
+      attributes.
+    </p>
+    <p>
+      On 3DShapes, InfoDiffusion attains the highest DCI disentanglement score (0.296), although the \(\beta\)-VAE and
+      the VAE (0.281 and 0.276) are within one standard deviation across seeds. On CelebA, it captures the most
+      attributes (5.7 on average) with the highest TAD (0.439), while also giving the most informative latents and,
+      with the learned latent prior and guidance, the lowest FID.
+    </p>
+
+    <h3 class="title">Discrete latents</h3>
+    <p>
+      With FSQ latents on CelebA (\(d_z = 32\), \(L = 5\) levels, a uniform prior over \(5^{32}\) codes), latent quality
+      is comparable to that of continuous latents: an average AUROC of 0.849 &plusmn; 0.003, a TAD of 0.370 &plusmn;
+      0.240 and 5.6 captured attributes over three seeds, compared with 0.844, 0.439 and 5.7 for continuous
+      InfoDiffusion latents.
+    </p>
+
+    <h3 class="title">Comparison to contrastive methods</h3>
+    <div class="table-pair">
+      <div>
+        <div class="table-wrap">
+          <table class="results compact">
+            <thead>
+              <tr><th class="l">CelebA</th><th class="c">Gen.</th><th>Dim.</th><th>TAD ↑</th><th>Latent<br>qual. ↑</th></tr>
+            </thead>
+            <tbody>
+              <tr><td class="l">SimCLR<sup>†</sup></td><td class="c no">✗</td><td>2048</td><td>0.192<span class="pm">±0.015</span></td><td>0.812<span class="pm">±0.003</span></td></tr>
+              <tr><td class="l">MoCo-v2<sup>†</sup></td><td class="c no">✗</td><td>2048</td><td><u>0.279</u><span class="pm">±0.025</span></td><td><b>0.846</b><span class="pm">±0.001</span></td></tr>
+              <tr><td class="l">DINO<sup>†</sup></td><td class="c no">✗</td><td>384</td><td>0.000<span class="pm">±0.000</span></td><td>0.592<span class="pm">±0.003</span></td></tr>
+              <tr class="ours group-start"><td class="l">InfoDiffusion</td><td class="c yes">✓</td><td>32</td><td><b>0.439</b><span class="pm">±0.134</span></td><td><u>0.844</u><span class="pm">±0.005</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div>
+        <div class="table-wrap">
+          <table class="results compact">
+            <thead>
+              <tr><th class="l">CelebA,<br>32 dims</th><th class="c">Gen.</th><th>TAD ↑</th><th>Attrs ↑</th><th>Latent<br>qual. ↑</th></tr>
+            </thead>
+            <tbody>
+              <tr><td class="l">SimCLR<sup>*</sup></td><td class="c no">✗</td><td><u>0.062</u><span class="pm">±0.005</span></td><td><u>2.6</u><span class="pm">±0.5</span></td><td>0.757<span class="pm">±0.002</span></td></tr>
+              <tr><td class="l">PDAE<sup>‡</sup></td><td class="c yes">✓</td><td>0.009<span class="pm">±0.001</span></td><td>1.0<span class="pm">±0.0</span></td><td><u>0.767</u><span class="pm">±0.003</span></td></tr>
+              <tr class="ours group-start"><td class="l">InfoDiffusion</td><td class="c yes">✓</td><td><b>0.439</b><span class="pm">±0.134</span></td><td><b>5.7</b><span class="pm">±0.6</span></td><td><b>0.844</b><span class="pm">±0.005</span></td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
-    <!--/ InfoDiffusion: Regularizing Semantic Latents By Maximizing Mutual Information -->
-  
-    <!-- Citation -->
-    <div class="columns is-centered">
-        <div class="column is-full-width has-text-centered">
-            <h2 class="title is-4">BibTeX</h2>
-            <div class="content has-text-justified">
-                <pre class="scrollable"><code>@inproceedings{wang2023infodiffusion,
-      title={Infodiffusion: Representation learning using information maximizing diffusion models},
-      author={Wang, Yingheng and Schiff, Yair and Gokaslan, Aaron and Pan, Weishen and Wang, Fei and De Sa, Christopher and Kuleshov, Volodymyr},
-      booktitle={International Conference on Machine Learning},
-      pages={36336--36354},
-      year={2023},
-      organization={PMLR}
-    }</code></pre>
-            </div>
-        </div>
+    <p class="table-caption">
+      Gen.: whether the model is generative. Dim.: latent dimension. <sup>†</sup> Weights from the method's PyTorch
+      repository. <sup>*</sup> Pretrained SimCLR encoder fine-tuned with an added dense layer that projects to 32
+      dimensions. <sup>‡</sup> Re-trained with the baseline's codebase.
+    </p>
+    <p>
+      InfoDiffusion's 32-dimensional latents are comparable to, and in some cases better than, the much larger
+      representations of contrastive methods, and InfoDiffusion is also a generative model. At the same latent size, it
+      outperforms a fine-tuned SimCLR encoder and PDAE, an auto-encoder built on a pretrained diffusion model, on both
+      disentanglement and latent quality.
+    </p>
+
+    <h3 class="title">Choices that matter</h3>
+    <p>
+      <b>Regularization coefficients.</b> Among the settings we evaluate, \((\lambda, \zeta) = (0.1, 0.9)\) gives the
+      most disentangled CelebA latents and the best or second-best FID on all four natural-image datasets, with both
+      samplers; its latents are less informative than those of \(\zeta = 1\) with small \(\lambda\) on CIFAR10 and
+      CelebA. Values \(\zeta > 1\) make the objective unbounded, so we cap \(\zeta = 1\).
+    </p>
+    <p>
+      <b>Sampling method.</b> Decoding \(\bz \sim p(\bz)\) gives FIDs of 22.5, 36.2, 19.8 and 12.1 on FashionMNIST,
+      CIFAR10, FFHQ and CelebA. The learned latent prior lowers them to 8.1, 25.7, 13.1 and 7.6, and guidance on \(\bz\)
+      (\(w = 2\)) improves FID further with both samplers on all four datasets. The encodings are more concentrated
+      than the prior, so prior draws often fall in regions the decoder has rarely seen.
+    </p>
+    <div class="takeaway">
+      <p>
+        Like DiffAE, InfoDiffusion obtains its best samples from a learned latent prior rather than from \(p(\bz)\)
+        itself.
+      </p>
     </div>
-    <!--/ Citation -->
-
-
   </div>
- </div>
+</section>
+
+<!-- ================= Samples ================= -->
+<section class="section" id="samples">
+  <div class="container is-max-desktop content">
+    <h2 class="title is-3">Uncurated Samples</h2>
+    <p>
+      The first 64 samples for a fixed random seed, without any selection, from the main configuration
+      (\((\lambda, \zeta) = (0.1, 0.9)\), \(d_z = 256\), first training seed) with guidance \(w = 2\). The FIDs are
+      means over three training seeds. Samples with \(\bz \sim p(\bz)\) contain more distorted faces and less
+      recognizable objects, in line with their higher FIDs.
+    </p>
+    <div class="explorer-controls">
+      <div class="tabs is-toggle is-small is-centered"><ul id="sample-tabs" role="tablist"></ul></div>
+      <p class="explorer-note" id="sample-note"></p>
+    </div>
+    <div class="sample-pair" id="sample-pair"></div>
+  </div>
+</section>
+
+<!-- ================= Code ================= -->
+<section class="section hero is-light" id="code">
+  <div class="container is-max-desktop content">
+    <h2 class="title is-3">Code</h2>
+    <p>
+      The implementation described in the paper is available at
+      <a href="https://github.com/yingheng-wang/InfoDiffusion" target="_blank">github.com/yingheng-wang/InfoDiffusion</a>.
+    </p>
+  </div>
+</section>
+
+<!-- ================= BibTeX ================= -->
+<section class="section" id="BibTeX">
+  <div class="container is-max-desktop content">
+    <h2 class="title is-3">BibTeX</h2>
+    <div class="bib-wrap">
+    <button class="button is-small copy-btn" id="copy-bibtex" type="button">Copy</button>
+    <pre><code id="bibtex-code">@inproceedings{wang2023infodiffusion,
+  title     = {{InfoDiffusion}: Representation Learning Using Information Maximizing Diffusion Models},
+  author    = {Wang, Yingheng and Schiff, Yair and Gokaslan, Aaron and Pan, Weishen and Wang, Fei and De Sa, Christopher and Kuleshov, Volodymyr},
+  booktitle = {Proceedings of the 40th International Conference on Machine Learning},
+  series    = {Proceedings of Machine Learning Research},
+  volume    = {202},
+  pages     = {36336--36354},
+  publisher = {PMLR},
+  year      = {2023}
+}</code></pre>
+    </div>
+  </div>
 </section>
 
 <footer class="footer">
   <div class="container">
     <div class="columns is-centered">
       <div class="column is-8">
-        <div class="content">
+        <div class="content has-text-centered">
           <p>
-            This webpage was built using the <a href="https://github.com/eliahuhorwitz/Academic-project-page-template">Academic Project Page Template</a> which was adopted from the <a href="https://github.com/nerfies/nerfies.github.io">Nerfies</a> project page. You are free to borrow the of this website, we just ask that you link back to this page in the footer.
-          </p>
-          <p>
-            This website is licensed under a <a rel="license"
-                                                href="http://creativecommons.org/licenses/by-sa/4.0/">Creative
-            Commons Attribution-ShareAlike 4.0 International License</a>.
-            Please remember to remove the analytics code included in the header of the website which you do not want on your website.
+            This page was built using the <a href="https://github.com/eliahuhorwitz/Academic-project-page-template" target="_blank">Academic Project Page Template</a>,
+            which was adopted from the <a href="https://nerfies.github.io" target="_blank">Nerfies</a> project page.
+            This website is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/" target="_blank">Creative Commons Attribution-ShareAlike 4.0 International License</a>.
           </p>
         </div>
       </div>

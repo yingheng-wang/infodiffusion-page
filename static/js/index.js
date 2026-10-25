@@ -1,78 +1,75 @@
-window.HELP_IMPROVE_VIDEOJS = false;
+// Uncurated samples (App. J of the paper): the first 64 samples of the main configuration, (lambda, zeta) = (0.1, 0.9),
+// d_z = 256, first training seed, guidance w = 2. FIDs are the w = 2 rows of Tables 2 and 3 (three-seed means).
+const SAMPLE_SETS = {
+  fmnist: { label: 'FashionMNIST', res: '32×32', learned: '6.8 ± 0.7', prior: '21.9 ± 0.7' },
+  cifar10: { label: 'CIFAR10', res: '32×32', learned: '21.3 ± 0.7', prior: '33.7 ± 1.0' },
+  celeba: { label: 'CelebA', res: '64×64', learned: '6.3 ± 0.2', prior: '11.1 ± 0.3' },
+  ffhq: { label: 'FFHQ', res: '64×64', learned: '9.8 ± 0.3', prior: '15.7 ± 0.7' },
+};
 
-var INTERP_BASE = "./static/interpolation/stacked";
-var NUM_INTERP_FRAMES = 240;
+const state = { set: 'celeba' };
 
-var interp_images = [];
-function preloadInterpolationImages() {
-  for (var i = 0; i < NUM_INTERP_FRAMES; i++) {
-    var path = INTERP_BASE + '/' + String(i).padStart(6, '0') + '.jpg';
-    interp_images[i] = new Image();
-    interp_images[i].src = path;
+function el(tag, attrs = {}, children = []) {
+  const node = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') node.className = v;
+    else if (k === 'text') node.textContent = v;
+    else node.setAttribute(k, v);
   }
+  for (const c of [].concat(children)) node.append(c);
+  return node;
 }
 
-function setInterpolationImage(i) {
-  var image = interp_images[i];
-  image.ondragstart = function() { return false; };
-  image.oncontextmenu = function() { return false; };
-  $('#interpolation-image-wrapper').empty().append(image);
+function renderTabs() {
+  const tabs = document.getElementById('sample-tabs');
+  tabs.replaceChildren(...Object.entries(SAMPLE_SETS).map(([key, s]) => {
+    const a = el('a', { href: '#samples', role: 'tab', 'aria-selected': String(key === state.set), text: s.label });
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      state.set = key;
+      renderSamples();
+    });
+    return el('li', { class: key === state.set ? 'is-active' : '' }, a);
+  }));
 }
 
+function panel(key, kind, title, fid) {
+  const s = SAMPLE_SETS[key];
+  return el('figure', { class: `sample-panel${kind === 'learned' ? ' is-learned' : ''}` }, [
+    el('img', {
+      src: `static/samples/${key}_${kind}_w2.png`, alt: `64 uncurated ${s.label} samples, ${title}`,
+      loading: 'lazy', width: '521', height: '521',
+    }),
+    el('figcaption', {}, [title, el('span', { class: 'fid', text: `FID ${fid} (w = 2)` })]),
+  ]);
+}
 
-$(document).ready(function() {
-    // Check for click events on the navbar burger icon
-    $(".navbar-burger").click(function() {
-      // Toggle the "is-active" class on both the "navbar-burger" and the "navbar-menu"
-      $(".navbar-burger").toggleClass("is-active");
-      $(".navbar-menu").toggleClass("is-active");
+function renderSamples() {
+  renderTabs();
+  const s = SAMPLE_SETS[state.set];
+  document.getElementById('sample-pair').replaceChildren(
+    panel(state.set, 'learned', 'z from the learned latent prior', s.learned),
+    panel(state.set, 'prior', 'z ~ p(z) = N(0, I)', s.prior),
+  );
+  document.getElementById('sample-note').textContent =
+    `${s.label}, ${s.res}. 64 samples per panel, first training seed, guidance w = 2, 50 Heun steps.`;
+}
 
-    });
-
-    var options = {
-			slidesToScroll: 1,
-			slidesToShow: 3,
-			loop: true,
-			infinite: true,
-			autoplay: false,
-			autoplaySpeed: 3000,
+// ---- BibTeX ----
+function setupCopy() {
+  const btn = document.getElementById('copy-bibtex');
+  btn.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(document.getElementById('bibtex-code').textContent);
+      btn.textContent = 'Copied';
+    } catch (e) {
+      btn.textContent = 'Select and copy';
     }
+    setTimeout(() => { btn.textContent = 'Copy'; }, 1600);
+  });
+}
 
-		// Initialize all div with carousel class
-    var carousels = bulmaCarousel.attach('.carousel', options);
-
-    // Loop on each carousel initialized
-    for(var i = 0; i < carousels.length; i++) {
-    	// Add listener to  event
-    	carousels[i].on('before:show', state => {
-    		console.log(state);
-    	});
-    }
-
-    // Access to bulmaCarousel instance of an element
-    var element = document.querySelector('#my-element');
-    if (element && element.bulmaCarousel) {
-    	// bulmaCarousel instance is available as element.bulmaCarousel
-    	element.bulmaCarousel.on('before-show', function(state) {
-    		console.log(state);
-    	});
-    }
-
-    /*var player = document.getElementById('interpolation-video');
-    player.addEventListener('loadedmetadata', function() {
-      $('#interpolation-slider').on('input', function(event) {
-        console.log(this.value, player.duration);
-        player.currentTime = player.duration / 100 * this.value;
-      })
-    }, false);*/
-    preloadInterpolationImages();
-
-    $('#interpolation-slider').on('input', function(event) {
-      setInterpolationImage(this.value);
-    });
-    setInterpolationImage(0);
-    $('#interpolation-slider').prop('max', NUM_INTERP_FRAMES - 1);
-
-    bulmaSlider.attach();
-
-})
+document.addEventListener('DOMContentLoaded', () => {
+  setupCopy();
+  renderSamples();
+});
