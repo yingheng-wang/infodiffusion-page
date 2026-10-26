@@ -31,7 +31,6 @@ body { font-family: 'Noto Sans', sans-serif; color: var(--ink); background: #fff
 .link-block a { margin: 5px 3px; }
 .link-block[hidden] { display: none; }
 .hf-logo { font-style: normal; font-size: 1.05em; line-height: 1; }
-.revision-note { max-width: 720px; margin: 0.9rem auto 0; font-size: 0.95rem; line-height: 1.55; color: var(--muted); }
 
 /* ---------- teaser ---------- */
 .teaser .hero-body { padding-top: 0.5rem; padding-bottom: 2.5rem; }
